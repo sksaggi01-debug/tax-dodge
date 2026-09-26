@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tax-dodge
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: TEACHER_CODE
+        value: bedi2302

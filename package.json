@@ -1,0 +1,14 @@
+{
+  "name": "tax-dodge-incidence-duel",
+  "version": "1.0.0",
+  "description": "Tax Dodge: The Incidence Duel - two-player tax incidence and elasticity classroom game by Dr. Sarabjeet Bedi",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "author": "Dr. Sarabjeet Bedi",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
