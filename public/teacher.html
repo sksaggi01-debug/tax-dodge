@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instructor View | Tax Dodge | Dr. Sarabjeet Bedi</title>
+<style>
+:root{--bg:#f5f3ee;--card:#fff;--ink:#1f2328;--muted:#5b6470;--line:#dcd8cf;--buyer:#1d5fbf;--buyer-soft:#e3edfb;--seller:#c2610c;--seller-soft:#fbeadb;--accent:#2b2d42;--good:#1f7a4d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 .4em}
+header{background:var(--accent);color:#fff;padding:14px 16px}
+header h1{font-size:1.35rem;margin:0}
+.wrap{max-width:1200px;margin:0 auto}
+main{padding:18px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+input{padding:10px 12px;font-size:1rem;border:1px solid var(--line);border-radius:8px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 14px;font-weight:600;background:var(--accent);color:#fff}
+button.secondary{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{background:#faf8f3}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+.stat{font-family:Georgia,serif;font-size:1.8rem;font-weight:700}
+.b{color:var(--buyer);font-weight:700} .s{color:var(--seller);font-weight:700}
+.bar{height:14px;border-radius:4px;display:inline-block;vertical-align:middle}
+.hidden{display:none!important}
+.big-code{font-family:"Courier New",monospace;font-weight:700;letter-spacing:.1em}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:10px 16px 24px}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Tax Dodge — Instructor Live View</h1><div class="small" style="opacity:.85">Created by Dr. Sarabjeet Bedi</div></div></header>
+<main class="wrap">
+  <section id="login" class="card">
+    <h2>Instructor code</h2>
+    <p class="muted small">Enter the instructor code set on the server (TEACHER_CODE).</p>
+    <input id="code" type="password" placeholder="Instructor code"> <button id="go">Open live view</button>
+    <p id="denied" class="small hidden" style="color:#b42318">Incorrect code.</p>
+  </section>
+
+  <section id="dash" class="hidden">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="muted small">Student link to share</div>
+        <div class="big-code" id="studentLink"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="secondary" id="clearDone">Clear finished games</button>
+        <button class="secondary" id="clearAll">Clear ALL games</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><div class="muted small">Active games</div><div class="stat" id="stGames">0</div><div class="small muted" id="stPlayers"></div></div>
+      <div class="card"><div class="muted small">Class-wide wins</div><div class="stat"><span class="b" id="stBW">0</span> <span class="muted" style="font-size:1rem">buyers</span> · <span class="s" id="stSW">0</span> <span class="muted" style="font-size:1rem">sellers</span></div><div class="small muted" id="stTies"></div></div>
+      <div class="card"><div class="muted small">Average buyer share of tax (all rounds played)</div><div class="stat" id="stBS">—</div><div class="small muted">Seller share = 100% − buyer share</div></div>
+    </div>
+
+    <div class="card">
+      <h3>By round: what did the class choose?</h3>
+      <p class="small muted">Average elasticity chosen, buyer share of the tax, and deadweight loss. Watch elasticity rise as the tax gets bigger.</p>
+      <div style="overflow-x:auto"><table id="roundTbl"></table></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Profile popularity</h3>
+        <div id="popular"></div>
+      </div>
+      <div class="card">
+        <h3>Leaderboard (top 10 players)</h3>
+        <div style="overflow-x:auto"><table id="leader"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>All games</h3>
+      <div style="overflow-x:auto"><table id="games"></table></div>
+    </div>
+  </section>
+</main>
+<footer>Tax Dodge: The Incidence Duel · Created by Dr. Sarabjeet Bedi</footer>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  if(typeof io==='undefined'){ $('login').innerHTML='<h2>Game server not reachable</h2><p>Open this page from the game link plus /teacher (for example https://your-game.onrender.com/teacher). If you are using the link, the server may be waking up: wait 60 seconds and refresh.</p>'; return; }
+  const socket=io(); let authed=false, code='';
+  $('studentLink').textContent = location.origin + '/';
+  $('go').onclick=()=>{ code=$('code').value; socket.emit('teacherJoin',{code}); };
+  $('code').addEventListener('keydown',e=>{ if(e.key==='Enter') $('go').click(); });
+  socket.on('connect',()=>{ if(authed) socket.emit('teacherJoin',{code}); });
+  socket.on('teacherDenied',()=>$('denied').classList.remove('hidden'));
+  socket.on('teacherOk',()=>{ authed=true; $('login').classList.add('hidden'); $('dash').classList.remove('hidden'); });
+  $('clearDone').onclick=()=>socket.emit('teacherClear',{mode:'done'});
+  $('clearAll').onclick=()=>{ if($('clearAll').dataset.arm==='1'){ socket.emit('teacherClear',{mode:'all'}); $('clearAll').dataset.arm=''; $('clearAll').textContent='Clear ALL games'; } else { $('clearAll').dataset.arm='1'; $('clearAll').textContent='Click again to confirm'; setTimeout(()=>{ $('clearAll').dataset.arm=''; $('clearAll').textContent='Clear ALL games'; },4000);} };
+
+  socket.on('summary',D=>{
+    const rooms=D.rooms, P=D.profiles, RD=D.rounds;
+    const active=rooms.filter(r=>r.phase!=='done');
+    $('stGames').textContent=rooms.length;
+    const humans=rooms.reduce((n,r)=>n+(r.buyer&&r.buyer!=='Computer'?1:0)+(r.seller&&r.seller!=='Computer'?1:0),0);
+    $('stPlayers').textContent=humans+' students · '+active.length+' in progress · '+(rooms.length-active.length)+' finished';
+    let bw=0,sw=0,ties=0; rooms.filter(r=>r.phase==='done').forEach(r=>{ if(r.scores.buyer>r.scores.seller) bw++; else if(r.scores.seller>r.scores.buyer) sw++; else ties++; });
+    $('stBW').textContent=bw; $('stSW').textContent=sw; $('stTies').textContent=ties?ties+' ties':'Finished games only';
+    const all=rooms.flatMap(r=>r.history);
+    $('stBS').textContent= all.length ? (all.reduce((a,h)=>a+h.bs,0)/all.length).toFixed(1)+'%' : '—';
+
+    let rt='<tr><th>Round</th><th>Market</th><th class="num">Tax</th><th class="num">Games</th><th class="num">Avg |Ed| chosen</th><th class="num">Avg Es chosen</th><th class="num">Avg buyer share</th><th class="num">Avg DWL</th></tr>';
+    RD.forEach((rd,i)=>{ const hs=rooms.map(r=>r.history.find(h=>h.round===i+1)).filter(Boolean); const n=hs.length;
+      const avg=f=>n?(hs.reduce((a,h)=>a+f(h),0)/n):null;
+      rt+=`<tr><td>${i+1}</td><td>${esc(rd.name)}</td><td class="num">$${rd.tax}</td><td class="num">${n}</td><td class="num">${n?avg(h=>P.buyer[h.b].e).toFixed(2):'—'}</td><td class="num">${n?avg(h=>P.seller[h.s].e).toFixed(2):'—'}</td><td class="num">${n?avg(h=>h.bs).toFixed(1)+'%':'—'}</td><td class="num">${n?'$'+avg(h=>h.dwl).toFixed(2):'—'}</td></tr>`; });
+    $('roundTbl').innerHTML=rt;
+
+    const cnt={buyer:[0,0,0,0],seller:[0,0,0,0]}; all.forEach(h=>{cnt.buyer[h.b]++;cnt.seller[h.s]++;});
+    const tot=Math.max(1,all.length);
+    let pop='';
+    ['buyer','seller'].forEach(role=>{ pop+=`<div class="small ${role==='buyer'?'b':'s'}" style="margin:6px 0 4px">${role==='buyer'?'Buyers':'Sellers'}</div>`;
+      P[role].forEach((p,i)=>{ const pct=100*cnt[role][i]/tot; pop+=`<div class="small" style="display:flex;align-items:center;gap:8px;margin:3px 0"><span style="width:190px">${p.key} · ${esc(p.name)} (${p.e})</span><span class="bar" style="width:${Math.max(2,pct*1.6)}px;background:${role==='buyer'?'#1d5fbf':'#c2610c'}"></span><span>${cnt[role][i]}</span></div>`; }); });
+    $('popular').innerHTML=pop;
+
+    const players=[]; rooms.forEach(r=>{ if(r.buyer&&r.buyer!=='Computer') players.push({n:r.buyer,role:'Buyer',pts:r.scores.buyer,g:r.code,rd:r.history.length}); if(r.seller&&r.seller!=='Computer') players.push({n:r.seller,role:'Seller',pts:r.scores.seller,g:r.code,rd:r.history.length}); });
+    players.sort((a,b)=>b.pts-a.pts);
+    let lb='<tr><th>#</th><th>Name</th><th>Role</th><th>Game</th><th class="num">Rounds</th><th class="num">Points</th></tr>';
+    players.slice(0,10).forEach((p,i)=>lb+=`<tr><td>${i+1}</td><td>${esc(p.n)}</td><td class="${p.role==='Buyer'?'b':'s'}">${p.role}</td><td>${p.g}</td><td class="num">${p.rd}</td><td class="num">${p.pts}</td></tr>`);
+    $('leader').innerHTML=players.length?lb:'<tr><td class="muted">No scores yet.</td></tr>';
+
+    let gt='<tr><th>Code</th><th>Buyer</th><th>Seller</th><th>Status</th><th>Picks by round (buyer/seller)</th><th class="num">Buyer pts</th><th class="num">Seller pts</th></tr>';
+    rooms.forEach(r=>{ const st=r.phase==='lobby'?'In lobby':r.phase==='done'?'Finished':'Round '+r.round+(r.phase==='reveal'?' (results)':' (choosing)');
+      const picks=r.history.map(h=>P.buyer[h.b].key+'/'+P.seller[h.s].key).join(' · ')||'—';
+      const nm=(n,c)=>n?esc(n)+(c?'':' <span class="muted small">(offline)</span>'):'<span class="muted">—</span>';
+      gt+=`<tr><td class="big-code">${r.code}</td><td>${nm(r.buyer,r.connected.buyer)}</td><td>${nm(r.seller,r.connected.seller)}</td><td>${st}</td><td class="small">${picks}</td><td class="num">${r.scores.buyer}</td><td class="num">${r.scores.seller}</td></tr>`; });
+    $('games').innerHTML=rooms.length?gt:'<tr><td class="muted">No games yet. Students create games at the student link above.</td></tr>';
+  });
+})();
+</script>
+</body>
+</html>

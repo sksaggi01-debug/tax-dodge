@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tax Dodge: The Incidence Duel | Dr. Sarabjeet Bedi</title>
+<style>
+:root{
+  --bg:#f5f3ee; --card:#ffffff; --ink:#1f2328; --muted:#5b6470; --line:#dcd8cf;
+  --buyer:#1d5fbf; --buyer-soft:#e3edfb; --seller:#c2610c; --seller-soft:#fbeadb;
+  --dwl:#8a8f98; --good:#1f7a4d; --bad:#b42318; --accent:#2b2d42;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 .4em}
+header{background:var(--accent);color:#fff;padding:14px 16px}
+header .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:1.35rem;margin:0}
+header .by{font-size:.85rem;opacity:.85}
+.wrap{max-width:1040px;margin:0 auto}
+main{padding:18px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.row>*{flex:1 1 280px}
+label{font-weight:600;display:block;margin-bottom:6px}
+input[type=text]{width:100%;padding:11px 12px;font-size:1rem;border:1px solid var(--line);border-radius:8px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:11px 16px;font-weight:600;background:var(--accent);color:#fff}
+button.secondary{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.muted{color:var(--muted)}
+.small{font-size:.87rem}
+.code{font-family:"Courier New",monospace;font-size:2.4rem;font-weight:700;letter-spacing:.2em}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700}
+.pill.buyer{background:var(--buyer-soft);color:var(--buyer)}
+.pill.seller{background:var(--seller-soft);color:var(--seller)}
+.role-card{border:2px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;background:#fff;text-align:left;color:var(--ink);font-weight:400}
+.role-card.buyer.mine{border-color:var(--buyer);background:var(--buyer-soft)}
+.role-card.seller.mine{border-color:var(--seller);background:var(--seller-soft)}
+.role-card.taken{cursor:not-allowed;opacity:.75}
+.role-card h3{margin-bottom:4px}
+.profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.prof{border:2px solid var(--line);border-radius:12px;padding:14px;background:#fff;text-align:left;color:var(--ink);font-weight:400;display:flex;flex-direction:column;justify-content:flex-start}
+.prof:disabled{opacity:.5}
+.prof.sel:disabled{opacity:1;background:#f0f1f6}
+.prof:hover:not(:disabled){border-color:var(--accent)}
+.prof.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(43,45,66,.15)}
+.prof .e{font-family:"Courier New",monospace;font-weight:700;font-size:1.05rem}
+.prof .start{font-weight:700;color:var(--good)}
+.scorebar{display:flex;gap:12px;flex-wrap:wrap}
+.score{flex:1 1 200px;border-radius:10px;padding:12px 14px}
+.score.buyer{background:var(--buyer-soft)}
+.score.seller{background:var(--seller-soft)}
+.score .pts{font-size:1.6rem;font-weight:700;font-family:Georgia,serif}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{background:#faf8f3}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.formula{font-family:"Courier New",monospace;background:#faf8f3;border:1px dashed var(--line);border-radius:8px;padding:10px 12px;line-height:1.6}
+.status{padding:10px 12px;border-radius:8px;background:#faf8f3;border:1px solid var(--line)}
+.err{background:#fde8e6;color:var(--bad);border:1px solid #f4c7c2;padding:10px 12px;border-radius:8px;margin-bottom:12px;display:none}
+svg text{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.fade{animation:fade .6s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grow{animation:grow .9s ease both}
+@keyframes grow{from{opacity:0}to{opacity:1}}
+details summary{cursor:pointer;font-weight:600}
+.big-winner{font-family:Georgia,serif;font-size:1.8rem;text-align:center;margin:6px 0 2px}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:10px 16px 24px}
+@media (max-width:560px){.code{font-size:1.9rem}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div><h1>Tax Dodge: The Incidence Duel</h1><div class="by">Created by Dr. Sarabjeet Bedi · Tax incidence &amp; elasticity</div></div>
+  <div id="hdrInfo" class="small"></div>
+</div></header>
+
+<main class="wrap">
+  <div id="err" class="err"></div>
+  <div id="conn" class="status small" style="margin-bottom:12px">Connecting to the game server…</div>
+
+  <!-- HOME -->
+  <section id="scrHome">
+    <div class="card">
+      <h2>How it works</h2>
+      <p>A per-unit tax hits your market every round. One player is the <span class="pill buyer">Buyer</span>, the other is the <span class="pill seller">Seller</span>. Each round you secretly choose how <b>elastic</b> you will be. The more elastic side pushes more of the tax onto the other side, but staying flexible costs you starting points. Highest total after 5 rounds wins.</p>
+    </div>
+    <div class="row">
+      <div class="card">
+        <label for="nameIn">Your first name</label>
+        <input id="nameIn" type="text" maxlength="20" placeholder="e.g., Maria" autocomplete="off">
+        <p class="small muted">Use the name your instructor will recognize.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="card">
+        <h3>Start a new game</h3>
+        <p class="muted small">You get a 4-letter code to give your partner.</p>
+        <button id="btnCreate">Create game</button>
+      </div>
+      <div class="card">
+        <h3>Join a partner's game</h3>
+        <label for="codeIn" class="small">Game code</label>
+        <input id="codeIn" type="text" maxlength="4" placeholder="ABCD" autocomplete="off" style="text-transform:uppercase;font-family:'Courier New',monospace;font-size:1.3rem;letter-spacing:.2em">
+        <div style="margin-top:10px"><button id="btnJoin">Join game</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="scrLobby" class="hidden">
+    <div class="card" style="text-align:center">
+      <div class="muted small">Game code — share with your partner</div>
+      <div class="code" id="lobCode">----</div>
+      <div class="small muted">Partner opens this same website, types their name, and enters the code.</div>
+    </div>
+    <div class="card">
+      <h2>Pick your role</h2>
+      <p class="muted small">Click a card to claim it. You can switch until the game starts.</p>
+      <div class="row">
+        <button class="role-card buyer" id="rcBuyer">
+          <h3 style="color:var(--buyer)">Buyer (Consumer)</h3>
+          <div class="small">You choose your <b>price elasticity of demand</b>. Goal: pay as little of the tax as possible.</div>
+          <div class="small" style="margin-top:8px" id="rcBuyerWho"></div>
+        </button>
+        <button class="role-card seller" id="rcSeller">
+          <h3 style="color:var(--seller)">Seller (Producer)</h3>
+          <div class="small">You choose your <b>price elasticity of supply</b>. Goal: keep as much of the price as possible.</div>
+          <div class="small" style="margin-top:8px" id="rcSellerWho"></div>
+        </button>
+      </div>
+      <div style="margin-top:14px" class="status small" id="lobStatus"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="btnStart" disabled>Start game</button>
+        <button id="btnBot" class="secondary">No partner? Play the computer</button>
+        <button id="btnRemoveBot" class="secondary hidden">Remove computer</button>
+        <button id="btnLeave" class="secondary">Leave</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="scrGame" class="hidden">
+    <div class="card">
+      <div class="scorebar">
+        <div class="score buyer"><div class="small"><span class="pill buyer">Buyer</span> <span id="sbBuyerName"></span> <span id="sbBuyerConn" class="small"></span></div><div class="pts" id="sbBuyer">0</div></div>
+        <div class="score seller"><div class="small"><span class="pill seller">Seller</span> <span id="sbSellerName"></span> <span id="sbSellerConn" class="small"></span></div><div class="pts" id="sbSeller">0</div></div>
+      </div>
+    </div>
+
+    <!-- choose -->
+    <div id="phChoose" class="hidden">
+      <div class="card fade">
+        <div class="muted small" id="chRoundLbl"></div>
+        <h2 id="chScenario"></h2>
+        <p>The government puts a tax of <b id="chTax"></b> per unit on this market. Before the tax: price <b>$10.00</b>, quantity <b>100</b> units.</p>
+        <p class="small muted">Choose your profile. Your partner is choosing at the same time and cannot see your pick until both of you lock in.</p>
+      </div>
+      <div class="card">
+        <h3 id="chYourRole"></h3>
+        <div class="profiles" id="chProfiles"></div>
+        <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button id="btnLock" disabled>Lock in my choice</button>
+          <span class="status small" id="chStatus"></span>
+        </div>
+      </div>
+      <div class="card">
+        <details>
+          <summary>Rules and scoring</summary>
+          <ul class="small">
+            <li><b>Your tax burden share</b> depends on both elasticities. Buyer share = E<sub>s</sub> ÷ (E<sub>s</sub> + |E<sub>d</sub>|). Seller share = |E<sub>d</sub>| ÷ (E<sub>s</sub> + |E<sub>d</sub>|).</li>
+            <li><b>Round points</b> = Starting points − (tax you pay + your share of deadweight loss).</li>
+            <li>More elastic profiles dodge more of the tax but start with fewer points (keeping alternatives open is costly).</li>
+            <li>The tax changes each round. Bigger taxes make dodging more valuable.</li>
+          </ul>
+        </details>
+        <div id="oppHistory" class="small muted" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- reveal -->
+    <div id="phReveal" class="hidden">
+      <div class="card fade">
+        <div class="muted small" id="rvRoundLbl"></div>
+        <h2 id="rvTitle"></h2>
+        <div class="row">
+          <div style="flex:1 1 420px"><div id="rvGraph"></div></div>
+          <div style="flex:1 1 280px">
+            <table>
+              <tr><th></th><th class="num" style="color:var(--buyer)">Buyer</th><th class="num" style="color:var(--seller)">Seller</th></tr>
+              <tr><td>Profile</td><td class="num" id="rvBP"></td><td class="num" id="rvSP"></td></tr>
+              <tr><td>Elasticity</td><td class="num" id="rvBE"></td><td class="num" id="rvSE"></td></tr>
+              <tr><td>Share of tax</td><td class="num" id="rvBS"></td><td class="num" id="rvSS"></td></tr>
+              <tr><td>Price paid / kept</td><td class="num" id="rvPb"></td><td class="num" id="rvPs"></td></tr>
+              <tr><td>Tax paid</td><td class="num" id="rvBT"></td><td class="num" id="rvST"></td></tr>
+              <tr><td>DWL share</td><td class="num" id="rvBD"></td><td class="num" id="rvSD"></td></tr>
+              <tr><td>Starting points</td><td class="num" id="rvBStart"></td><td class="num" id="rvSStart"></td></tr>
+              <tr><th>Round points</th><th class="num" id="rvBPts"></th><th class="num" id="rvSPts"></th></tr>
+            </table>
+          </div>
+        </div>
+        <div class="formula small" id="rvFormula" style="margin-top:12px"></div>
+        <p class="small" id="rvMarket" style="margin-top:10px"></p>
+        <p id="rvLesson" class="status small"></p>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button id="btnReady">Next round</button>
+          <span class="small muted" id="rvWait"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- done -->
+    <div id="phDone" class="hidden">
+      <div class="card fade">
+        <div class="big-winner" id="dnWinner"></div>
+        <p class="muted" style="text-align:center" id="dnScore"></p>
+      </div>
+      <div class="card">
+        <h3>Round-by-round</h3>
+        <div style="overflow-x:auto"><table id="dnTable"></table></div>
+      </div>
+      <div class="card">
+        <h3>What to take away</h3>
+        <ol class="small">
+          <li><b>The less elastic side bears more of the tax.</b> Burden depends on elasticities, not on who writes the check to the government.</li>
+          <li><b>Buyer share = E<sub>s</sub>/(E<sub>s</sub>+|E<sub>d</sub>|).</b> When both sides are equally elastic, they split the tax 50/50.</li>
+          <li><b>Bigger taxes reward dodging.</b> At a $1 tax, flexibility was not worth its cost. At $4–$6 it usually was.</li>
+          <li><b>When both sides dodge, everyone loses more trade.</b> Two elastic sides cut quantity the most, so deadweight loss is largest.</li>
+        </ol>
+        <p class="small muted">Look back at your table: in which round did your choice cost you the most, and why?</p>
+        <button id="btnNew">Play again with a new code</button>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Tax Dodge: The Incidence Duel · Created by Dr. Sarabjeet Bedi · Austin Community College</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+    del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  };
+  let playerId = store.get('td_pid');
+  if(!playerId){ playerId = 'p' + Math.random().toString(36).slice(2) + Date.now().toString(36); store.set('td_pid', playerId); }
+  const savedName = store.get('td_name'); if(savedName) $('nameIn').value = savedName;
+  const qsCode = new URLSearchParams(location.search).get('code');
+  if(qsCode) $('codeIn').value = qsCode.toUpperCase().slice(0,4);
+
+  if(typeof io === 'undefined'){
+    const c=$('conn'); c.style.background='#fde8e6'; c.style.color='#b42318';
+    c.innerHTML = '<b>The game server is not reachable.</b> Open the game from its web link (for example https://your-game.onrender.com). Opening the HTML file directly, or from a Blackboard file upload, will not work because the game needs its server. If you are using the link, the server may be waking up: wait 60 seconds and refresh.';
+    ['btnCreate','btnJoin'].forEach(id=>$(id).disabled=true);
+    return;
+  }
+  const socket = io();
+  let pendingTimer = null;
+  function setConn(ok, msg){
+    const c=$('conn');
+    if(ok){ c.classList.add('hidden'); }
+    else { c.classList.remove('hidden'); c.style.background='#fff7e6'; c.style.color='#8a5a00'; c.textContent = msg; }
+    ['btnCreate','btnJoin'].forEach(id=>$(id).disabled=!ok);
+  }
+  setConn(false, 'Connecting to the game server…');
+  socket.on('connect_error', ()=>setConn(false, 'Cannot reach the game server yet. It may be waking up (up to 60 seconds). Keep this page open; it will reconnect automatically.'));
+  socket.on('disconnect', ()=>setConn(false, 'Connection lost. Reconnecting…'));
+  function waitForState(){
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(()=>showErr('No response from the game server. Check your internet connection and refresh the page.'), 8000);
+  }
+  let S = null, pick = null, lastPhaseKey = '';
+
+  const money = x => '$' + Number(x).toFixed(2);
+  const fmt1 = x => Number(x).toFixed(1);
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  function showErr(m){ const e=$('err'); e.textContent=m; e.style.display='block'; clearTimeout(showErr.t); showErr.t=setTimeout(()=>e.style.display='none',5000); }
+  function screen(id){ ['scrHome','scrLobby','scrGame'].forEach(s=>$(s).classList.toggle('hidden', s!==id)); }
+  function getName(){ const n=$('nameIn').value.trim(); if(!n){ showErr('Type your first name first.'); $('nameIn').focus(); return null;} store.set('td_name',n); return n; }
+
+  socket.on('connect', ()=>{
+    setConn(true);
+    const code = store.get('td_code');
+    if(code) socket.emit('rejoin',{code, playerId});
+  });
+  socket.on('rejoinFailed', ()=>{ store.del('td_code'); if(!S) screen('scrHome'); });
+  socket.on('err', m=>{ clearTimeout(pendingTimer); showErr(m); });
+  socket.on('roomClosed', ()=>{ store.del('td_code'); S=null; screen('scrHome'); showErr('Your instructor closed this game. Start or join a new one.'); });
+  socket.on('state', st=>{ clearTimeout(pendingTimer); S=st; store.set('td_code', st.code); render(); });
+
+  $('btnCreate').onclick = ()=>{ const n=getName(); if(n){ waitForState(); socket.emit('create',{name:n, playerId}); } };
+  $('btnJoin').onclick = ()=>{ const n=getName(); if(!n) return; const c=$('codeIn').value.trim().toUpperCase(); if(c.length!==4) return showErr('Enter the 4-letter game code.'); waitForState(); socket.emit('join',{code:c,name:n,playerId}); };
+  $('codeIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('btnJoin').click(); });
+  $('rcBuyer').onclick = ()=>socket.emit('claimRole',{role:'buyer'});
+  $('rcSeller').onclick = ()=>socket.emit('claimRole',{role:'seller'});
+  $('btnStart').onclick = ()=>socket.emit('start');
+  $('btnBot').onclick = ()=>socket.emit('addBot');
+  $('btnRemoveBot').onclick = ()=>socket.emit('removeBot');
+  $('btnLeave').onclick = ()=>{ socket.emit('leave'); store.del('td_code'); S=null; screen('scrHome'); };
+  $('btnLock').onclick = ()=>{ if(pick!==null) socket.emit('choose',{idx:pick}); };
+  $('btnReady').onclick = ()=>socket.emit('ready');
+  $('btnNew').onclick = ()=>{ socket.emit('leave'); store.del('td_code'); S=null; screen('scrHome'); };
+
+  function render(){
+    if(!S) return screen('scrHome');
+    $('hdrInfo').textContent = S.me ? (S.me.name + (S.me.role? ' · ' + (S.me.role==='buyer'?'Buyer':'Seller') : '') + ' · Game ' + S.code) : '';
+    if(S.phase==='lobby') return renderLobby();
+    screen('scrGame');
+    $('sbBuyer').textContent = S.scores.buyer; $('sbSeller').textContent = S.scores.seller;
+    $('sbBuyerName').textContent = S.names.buyer || ''; $('sbSellerName').textContent = S.names.seller || '';
+    $('sbBuyerConn').textContent = S.connected.buyer ? '' : '(disconnected)';
+    $('sbSellerConn').textContent = S.connected.seller ? '' : '(disconnected)';
+    ['phChoose','phReveal','phDone'].forEach(p=>$(p).classList.add('hidden'));
+    if(S.phase==='choose') renderChoose();
+    else if(S.phase==='reveal') renderReveal();
+    else if(S.phase==='done') renderDone();
+  }
+
+  function renderLobby(){
+    screen('scrLobby');
+    $('lobCode').textContent = S.code;
+    const mine = S.me && S.me.role;
+    [['buyer','rcBuyer','rcBuyerWho'],['seller','rcSeller','rcSellerWho']].forEach(([r,card,who])=>{
+      const nm = S.names[r];
+      $(card).classList.toggle('mine', mine===r);
+      $(card).classList.toggle('taken', !!nm && mine!==r);
+      $(who).innerHTML = nm ? ('Taken by <b>' + esc(nm) + '</b>' + (mine===r?' (you)':'')) : '<span class="muted">Open — click to claim</span>';
+    });
+    const both = S.names.buyer && S.names.seller;
+    $('btnStart').disabled = !both;
+    $('btnBot').classList.toggle('hidden', S.hasBot || S.memberCount>1);
+    $('btnRemoveBot').classList.toggle('hidden', !S.hasBot);
+    let msg;
+    if(!mine) msg = 'Click Buyer or Seller to claim your role.';
+    else if(S.memberCount<2 && !S.hasBot) msg = 'Waiting for your partner to join with code ' + S.code + '…';
+    else if(!both) msg = 'Waiting for your partner to pick the other role…';
+    else msg = 'Both roles filled. Either player can press Start.';
+    $('lobStatus').textContent = msg;
+  }
+
+  function renderChoose(){
+    $('phChoose').classList.remove('hidden');
+    const key = 'c' + S.round;
+    if(key!==lastPhaseKey){ pick = null; lastPhaseKey = key; }
+    const role = S.me.role, opp = role==='buyer'?'seller':'buyer';
+    $('chRoundLbl').textContent = 'Round ' + S.round + ' of ' + S.totalRounds;
+    $('chScenario').textContent = S.scenario.name;
+    $('chTax').textContent = money(S.scenario.tax);
+    $('chYourRole').innerHTML = role==='buyer' ? 'You are the <span style="color:var(--buyer)">Buyer</span>: choose your demand elasticity (|E<sub>d</sub>|)' : 'You are the <span style="color:var(--seller)">Seller</span>: choose your supply elasticity (E<sub>s</sub>)';
+    const locked = S.locked[role];
+    const chosen = locked ? S.choices[role] : pick;
+    $('chProfiles').innerHTML = S.profiles[role].map((p,i)=>`
+      <button class="prof ${chosen===i?'sel':''}" data-i="${i}" ${locked?'disabled':''}>
+        <div class="small muted">Profile ${p.key}</div>
+        <h3 style="margin:2px 0 6px">${esc(p.name)}</h3>
+        <div class="e">${role==='buyer'?'|E<sub>d</sub>|':'E<sub>s</sub>'} = ${p.e}</div>
+        <div class="small" style="margin:6px 0">${esc(p.desc)}</div>
+        <div class="small">Starting points: <span class="start">${p.start}</span></div>
+        <div class="small muted">${p.e<1?'Inelastic':'Elastic'}</div>
+      </button>`).join('');
+    document.querySelectorAll('#chProfiles .prof').forEach(b=>b.onclick=()=>{ if(S.locked[role]) return; pick=Number(b.dataset.i); renderChoose(); });
+    $('btnLock').disabled = locked || pick===null;
+    $('btnLock').textContent = locked ? 'Locked in' : 'Lock in my choice';
+    const oppName = S.names[opp] || (opp==='buyer'?'Buyer':'Seller');
+    $('chStatus').textContent = locked
+      ? (S.locked[opp] ? 'Both locked. Revealing…' : 'Locked. Waiting for ' + oppName + '…')
+      : (S.locked[opp] ? oppName + ' has locked in. Your move.' : oppName + ' is still choosing.');
+    if(S.history.length){
+      const oppIdx = S.history.map(h => opp==='buyer'?h.buyerChoice:h.sellerChoice);
+      $('oppHistory').innerHTML = 'Your partner\'s past picks: ' + oppIdx.map((x,i)=>'R'+(i+1)+': '+S.profiles[opp][x].key+' ('+S.profiles[opp][x].e+')').join(' · ');
+    } else $('oppHistory').textContent = '';
+  }
+
+  function renderReveal(){
+    $('phReveal').classList.remove('hidden');
+    const h = S.history[S.history.length-1], R = h.result;
+    const bp = S.profiles.buyer[h.buyerChoice], sp = S.profiles.seller[h.sellerChoice];
+    $('rvRoundLbl').textContent = 'Round ' + h.round + ' of ' + S.totalRounds + ' · ' + h.scenario + ' · Tax ' + money(R.t);
+    const role = S.me.role;
+    const myPts = role==='buyer'?R.buyerPoints:R.sellerPoints, oppPts = role==='buyer'?R.sellerPoints:R.buyerPoints;
+    $('rvTitle').textContent = myPts>oppPts ? 'You won this round (+' + (myPts-oppPts) + ')' : myPts<oppPts ? 'Your partner won this round (+' + (oppPts-myPts) + ')' : 'This round is a tie';
+    $('rvBP').textContent = bp.key + ' · ' + bp.name; $('rvSP').textContent = sp.key + ' · ' + sp.name;
+    $('rvBE').textContent = '|Ed| = ' + R.Ed; $('rvSE').textContent = 'Es = ' + R.Es;
+    $('rvBS').textContent = fmt1(R.buyerShare) + '%'; $('rvSS').textContent = fmt1(R.sellerShare) + '%';
+    $('rvPb').textContent = money(R.Pb) + ' (+' + money(R.Pb-R.P0) + ')';
+    $('rvPs').textContent = money(R.Ps) + ' (−' + money(R.P0-R.Ps) + ')';
+    $('rvBT').textContent = '−' + fmt1(R.buyerTax); $('rvST').textContent = '−' + fmt1(R.sellerTax);
+    $('rvBD').textContent = '−' + fmt1(R.buyerDWL); $('rvSD').textContent = '−' + fmt1(R.sellerDWL);
+    $('rvBStart').textContent = R.buyerStart; $('rvSStart').textContent = R.sellerStart;
+    $('rvBPts').textContent = R.buyerPoints; $('rvSPts').textContent = R.sellerPoints;
+    $('rvFormula').innerHTML = 'Buyer share = Es ÷ (Es + |Ed|) = ' + R.Es + ' ÷ (' + R.Es + ' + ' + R.Ed + ') = ' + fmt1(R.buyerShare) + '%<br>→ Buyer pays ' + money(R.Pb-R.P0) + ' of the ' + money(R.t) + ' tax, seller absorbs ' + money(R.P0-R.Ps);
+    $('rvMarket').innerHTML = 'Quantity fell from <b>100</b> to <b>' + fmt1(R.Q1) + '</b> units. Tax revenue = ' + money(R.t) + ' × ' + fmt1(R.Q1) + ' = <b>' + money(R.revenue) + '</b>. Deadweight loss = ½ × ' + money(R.t) + ' × ' + fmt1(100-R.Q1) + ' = <b>' + money(R.dwl) + '</b>.';
+    let lesson;
+    if(Math.abs(R.Ed-R.Es)<1e-9) lesson = 'Equal elasticities, so the tax split 50/50.';
+    else if(R.Ed<R.Es) lesson = 'The buyer was less elastic (' + R.Ed + ' < ' + R.Es + '), so the buyer carried more of the tax.';
+    else lesson = 'The seller was less elastic (' + R.Es + ' < ' + R.Ed + '), so the seller carried more of the tax.';
+    if(Math.abs(R.Ed-R.Es)>1e-9) lesson += ' The side with fewer alternatives cannot escape the tax.';
+    $('rvLesson').textContent = lesson;
+    $('rvGraph').innerHTML = graphSVG(R);
+    const iAmReady = S.ready[role], oppReady = S.ready[role==='buyer'?'seller':'buyer'];
+    $('btnReady').disabled = iAmReady;
+    $('btnReady').textContent = h.round>=S.totalRounds ? 'See final results' : 'Next round';
+    $('rvWait').textContent = iAmReady ? (oppReady?'':'Waiting for your partner…') : (oppReady?'Your partner is ready.':'');
+  }
+
+  function renderDone(){
+    $('phDone').classList.remove('hidden');
+    const b=S.scores.buyer, s=S.scores.seller, role=S.me.role;
+    const winner = b>s?'buyer':s>b?'seller':null;
+    $('dnWinner').textContent = !winner ? 'It\'s a tie!' : (winner===role ? 'You win!' : (S.names[winner]||cap(winner)) + ' wins!');
+    $('dnScore').textContent = 'Buyer ' + (S.names.buyer||'') + ': ' + b + ' points · Seller ' + (S.names.seller||'') + ': ' + s + ' points';
+    let rows = '<tr><th>Round</th><th>Market</th><th class="num">Tax</th><th>Buyer pick</th><th>Seller pick</th><th class="num">Buyer share</th><th class="num">Qty</th><th class="num">DWL</th><th class="num">Buyer pts</th><th class="num">Seller pts</th></tr>';
+    S.history.forEach(h=>{ const R=h.result;
+      rows += `<tr><td>${h.round}</td><td>${esc(h.scenario)}</td><td class="num">${money(R.t)}</td><td>${S.profiles.buyer[h.buyerChoice].key} (${R.Ed})</td><td>${S.profiles.seller[h.sellerChoice].key} (${R.Es})</td><td class="num">${fmt1(R.buyerShare)}%</td><td class="num">${fmt1(R.Q1)}</td><td class="num">${money(R.dwl)}</td><td class="num">${R.buyerPoints}</td><td class="num">${R.sellerPoints}</td></tr>`; });
+    rows += `<tr><th colspan="8">Total</th><th class="num">${b}</th><th class="num">${s}</th></tr>`;
+    $('dnTable').innerHTML = rows;
+  }
+
+  // ---------- Graph ----------
+  function graphSVG(R){
+    const W=520,H=392,m={l:52,r:18,t:16,b:58};
+    const QMAX=160,PMAX=20;
+    const x=q=>m.l+(q/QMAX)*(W-m.l-m.r), y=p=>H-m.b-(p/PMAX)*(H-m.t-m.b);
+    const bd=R.Ed*R.Q0/R.P0, bs=R.Es*R.Q0/R.P0;
+    const dP=q=>R.P0-(q-R.Q0)/bd, sP=q=>R.P0+(q-R.Q0)/bs;
+    function seg(f){ // clip line P=f(Q) to box
+      const pts=[]; for(let i=0;i<=320;i++){ const q=i*QMAX/320, p=f(q); if(p>=0&&p<=PMAX) pts.push([q,p]); }
+      if(pts.length<2) return '';
+      return `M${x(pts[0][0]).toFixed(1)},${y(pts[0][1]).toFixed(1)} L${x(pts[pts.length-1][0]).toFixed(1)},${y(pts[pts.length-1][1]).toFixed(1)}`;
+    }
+    let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Supply and demand with tax wedge">`;
+    for(let p=0;p<=PMAX;p+=4){ g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(p)}" y2="${y(p)}" stroke="#eee"/><text x="${m.l-8}" y="${y(p)+4}" font-size="11" text-anchor="end" fill="#5b6470">$${p}</text>`; }
+    for(let q=0;q<=QMAX;q+=40){ g+=`<text x="${x(q)}" y="${H-m.b+16}" font-size="11" text-anchor="middle" fill="#5b6470">${q}</text>`; }
+    g+=`<line x1="${m.l}" y1="${y(0)}" x2="${W-m.r}" y2="${y(0)}" stroke="#333"/><line x1="${m.l}" y1="${y(0)}" x2="${m.l}" y2="${m.t}" stroke="#333"/>`;
+    g+=`<text x="${W-m.r}" y="${H-6}" text-anchor="end" font-size="12" fill="#333">Quantity</text><text transform="translate(14,${(m.t+H-m.b)/2}) rotate(-90)" font-size="12" text-anchor="middle" fill="#333">Price</text>`;
+    // areas
+    g+=`<g class="grow"><rect x="${x(0)}" y="${y(R.Pb)}" width="${x(R.Q1)-x(0)}" height="${y(R.P0)-y(R.Pb)}" fill="#1d5fbf" fill-opacity=".28"/>`;
+    g+=`<rect x="${x(0)}" y="${y(R.P0)}" width="${x(R.Q1)-x(0)}" height="${y(R.Ps)-y(R.P0)}" fill="#c2610c" fill-opacity=".28"/>`;
+    g+=`<polygon points="${x(R.Q1)},${y(R.Pb)} ${x(R.Q1)},${y(R.Ps)} ${x(R.Q0)},${y(R.P0)}" fill="#8a8f98" fill-opacity=".45"/></g>`;
+    // curves
+    g+=`<path d="${seg(dP)}" stroke="#1d5fbf" stroke-width="3" fill="none"/><path d="${seg(sP)}" stroke="#c2610c" stroke-width="3" fill="none"/>`;
+    // lines
+    const dash='stroke-dasharray="4 4"';
+    g+=`<line x1="${m.l}" x2="${x(R.Q0)}" y1="${y(R.P0)}" y2="${y(R.P0)}" stroke="#333" ${dash}/>`;
+    g+=`<line x1="${x(R.Q1)}" x2="${x(R.Q1)}" y1="${y(R.Pb)}" y2="${y(0)}" stroke="#333" ${dash}/>`;
+    g+=`<circle cx="${x(R.Q0)}" cy="${y(R.P0)}" r="4" fill="#333"/>`;
+    g+=`<circle cx="${x(R.Q1)}" cy="${y(R.Pb)}" r="4" fill="#1d5fbf"/><circle cx="${x(R.Q1)}" cy="${y(R.Ps)}" r="4" fill="#c2610c"/>`;
+    g+=`<text x="${m.l+4}" y="${y(R.Pb)-4}" font-size="11" fill="#1d5fbf" font-weight="700">Pb $${R.Pb.toFixed(2)}</text>`;
+    g+=`<text x="${m.l+4}" y="${y(R.Ps)+13}" font-size="11" fill="#c2610c" font-weight="700">Ps $${R.Ps.toFixed(2)}</text>`;
+    g+=`<text x="${x(R.Q0)+6}" y="${y(R.P0)-6}" font-size="11" fill="#333">$10, 100</text>`;
+    g+=`<text x="${x(R.Q1)}" y="${H-m.b+30}" font-size="11" text-anchor="middle" fill="#333" font-weight="700">Q1=${R.Q1.toFixed(1)}</text>`;
+    // legend
+    const lx=W-m.r-150, ly=m.t+6;
+    g+=`<rect x="${lx-6}" y="${ly-4}" width="152" height="78" fill="#fff" fill-opacity=".9" stroke="#ddd"/>`;
+    [['#1d5fbf','Demand / buyer\'s tax'],['#c2610c','Supply / seller\'s tax'],['#8a8f98','Deadweight loss']].forEach((c,i)=>{ g+=`<rect x="${lx}" y="${ly+i*22+2}" width="14" height="12" fill="${c[0]}" fill-opacity=".6"/><text x="${lx+20}" y="${ly+i*22+12}" font-size="11" fill="#333">${c[1]}</text>`; });
+    g+=`</svg>`;
+    return g;
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+})();
+</script>
+</body>
+</html>
