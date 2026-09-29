@@ -123,7 +123,7 @@ svg text{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
       <div class="panel">
         <div class="ctrl"><label>Price ceiling <span class="val" id="s3v"></span></label><input type="range" id="s3" min="2" max="8" step="0.25" value="4"></div>
         <div style="margin-bottom:6px" id="t3"></div>
-        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer"><input type="checkbox" id="bm3" style="width:18px;height:18px;accent-color:#7a1fa2"> Show black market (illegal resale up to buyers' value)</label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer;background:#f3e8f8;border:2px solid #7a1fa2;border-radius:8px;padding:7px 10px;color:#4a1063"><input type="checkbox" id="bm3" checked style="width:18px;height:18px;accent-color:#7a1fa2"> Black market ON: illegal resale at buyers' value (untick for legal market only)</label>
         <table class="nums">
           <tr><td>Qd at ceiling</td><td class="v" id="n3qd"></td></tr>
           <tr><td>Qs at ceiling (units actually sold)</td><td class="v" id="n3qs"></td></tr>
@@ -190,7 +190,7 @@ svg text{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
       <div class="panel">
         <div class="ctrl"><label>Price floor <span class="val" id="s5v"></span></label><input type="range" id="s5" min="2" max="10" step="0.25" value="6"></div>
         <div style="margin-bottom:6px" id="t5"></div>
-        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer"><input type="checkbox" id="bm5" style="width:18px;height:18px;accent-color:#7a1fa2"> Show black market (illegal sales below the floor)</label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer;background:#f3e8f8;border:2px solid #7a1fa2;border-radius:8px;padding:7px 10px;color:#4a1063"><input type="checkbox" id="bm5" checked style="width:18px;height:18px;accent-color:#7a1fa2"> Black market ON: illegal sales below the floor (untick for legal market only)</label>
         <table class="nums">
           <tr><td>Qd at floor (units actually sold)</td><td class="v" id="n5qd"></td></tr>
           <tr><td>Qs at floor</td><td class="v" id="n5qs"></td></tr>
