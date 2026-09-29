@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Price Controls & Tax Incidence | Dr. Sarabjeet Bedi</title>
+<style>
+:root{
+  --bg:#1f2130; --paper:#fbfaf6; --ink:#1f2328; --muted:#5b6470; --line:#dcd8cf;
+  --buyer:#1d5fbf; --buyer-soft:#e3edfb; --seller:#c2610c; --seller-soft:#fbeadb;
+  --dwl:#8a8f98; --gov:#1f7a4d; --gov-soft:#e2f2e9; --accent:#2b2d42; --warn:#b42318;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center}
+.slide{position:absolute;inset:0;background:var(--paper);border-radius:6px;padding:34px 48px 54px;display:none;overflow:hidden}
+.slide.active{display:block}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
+h1{font-size:52px;line-height:1.1}
+h2{font-size:34px;margin-bottom:6px}
+h3{font-size:20px;margin:0 0 6px}
+.kicker{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.sub{color:var(--muted);font-size:17px;margin:0 0 14px}
+.foot{position:absolute;left:48px;right:48px;bottom:16px;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:600px 1fr;gap:26px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.ctrl{margin:4px 0 12px}
+.ctrl label{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-bottom:4px}
+.ctrl .val{font-family:"Courier New",monospace;font-size:18px}
+input[type=range]{width:100%;accent-color:var(--accent);height:22px}
+table.nums{width:100%;border-collapse:collapse;font-size:16px}
+table.nums td{padding:5px 6px;border-bottom:1px solid #eee}
+table.nums td.v{text-align:right;font-family:"Courier New",monospace;font-weight:700;white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.tag.on{background:#fde8e6;color:var(--warn)} .tag.off{background:#eef0f3;color:var(--muted)}
+.calc{font-family:"Courier New",monospace;font-size:15px;background:#f4f2ec;border-radius:8px;padding:10px 12px;line-height:1.55}
+.note{font-size:14px;color:var(--muted);margin-top:8px}
+.quiz{margin-top:12px;background:#fff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px}
+.quiz .q{font-weight:700;margin-bottom:8px;font-size:16px}
+.quiz .opts{display:flex;gap:8px;flex-wrap:wrap}
+.quiz button{font:inherit;font-size:15px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.quiz button.right{background:#e2f2e9;border-color:var(--gov);color:var(--gov);font-weight:700}
+.quiz button.wrong{background:#fde8e6;border-color:var(--warn);color:var(--warn)}
+.quiz .fb{margin-top:8px;font-size:15px;min-height:22px}
+.seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg button{font:inherit;font-size:14px;padding:7px 12px;border:0;background:#fff;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+ul.tight{margin:6px 0 0;padding-left:20px;font-size:17px;line-height:1.5}
+.big{font-size:20px;line-height:1.5}
+table.sum{width:100%;border-collapse:collapse;font-size:17px;margin-top:10px}
+table.sum th,table.sum td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}
+table.sum th:first-child,table.sum td:first-child{text-align:left}
+table.sum thead th{background:#f4f2ec;font-size:15px}
+.nav{position:fixed;bottom:12px;right:16px;display:flex;gap:8px;z-index:5}
+.nav button{font:inherit;font-size:14px;padding:8px 12px;border-radius:8px;border:0;background:#3a3d52;color:#fff;cursor:pointer}
+.nav span{color:#cfd2dc;font-size:14px;align-self:center;min-width:54px;text-align:center}
+svg text{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.title-wrap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(135deg,#2b2d42 0%,#3b3f5c 100%);padding:60px 80px;color:#fff}
+.title-wrap .kicker{color:#c9ccda}
+.obj{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+.obj div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:14px 16px;font-size:17px;line-height:1.45}
+.obj b{display:block;font-family:Georgia,serif;font-size:20px;margin-bottom:4px}
+@media print{ #stage{position:static;display:block} #deck{transform:none!important} .slide{display:block;position:relative;page-break-after:always;margin-bottom:10px} .nav{display:none} }
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+
+<!-- 1. TITLE -->
+<section class="slide" data-title="Title">
+  <div class="title-wrap">
+    <div class="kicker">ECON 2302 · Principles of Microeconomics</div>
+    <h1>Price Ceilings, Price Floors<br>&amp; Who Really Pays a Tax</h1>
+    <p style="font-size:22px;color:#dfe1ea;margin:18px 0 0">Dr. Sarabjeet Bedi · Austin Community College</p>
+    <div class="obj">
+      <div><b>1 · Calculate</b>Qd, Qs, shortages and surpluses when the government sets a price.</div>
+      <div><b>2 · Measure</b>Consumer surplus, producer surplus and deadweight loss from graphs.</div>
+      <div><b>3 · Explain</b>Why the less elastic side of the market bears more of a tax.</div>
+    </div>
+    <p style="margin-top:30px;color:#c9ccda;font-size:15px">Use ← → to move between slides · Press F for full screen · Drag the sliders on every graph</p>
+  </div>
+</section>
+
+<!-- 2. BASELINE -->
+<section class="slide" data-title="Baseline market">
+  <div class="kicker">Our market for the whole lesson</div>
+  <h2>Start Here: The Market in Equilibrium</h2>
+  <p class="sub">Demand: <b>Qd = 120 − 10P</b> &nbsp;·&nbsp; Supply: <b>Qs = 20P − 30</b></p>
+  <div class="cols">
+    <div class="panel"><svg id="g2" viewBox="0 0 600 470" width="600" height="470"></svg></div>
+    <div>
+      <div class="panel">
+        <div class="ctrl"><label>Try a price <span class="val" id="s2v"></span></label><input type="range" id="s2" min="2" max="11" step="0.25" value="7"></div>
+        <table class="nums">
+          <tr><td>Quantity demanded (Qd)</td><td class="v" id="n2qd"></td></tr>
+          <tr><td>Quantity supplied (Qs)</td><td class="v" id="n2qs"></td></tr>
+          <tr><td id="n2gl">Gap</td><td class="v" id="n2gap"></td></tr>
+        </table>
+        <p class="note" id="n2msg"></p>
+      </div>
+      <div class="calc" style="margin-top:12px">
+        Set Qd = Qs: 120 − 10P = 20P − 30<br>
+        150 = 30P &nbsp;→&nbsp; <b>P* = $5</b>, &nbsp;<b>Q* = 70</b><br>
+        CS = ½ × (12 − 5) × 70 = <b>$245.00</b><br>
+        PS = ½ × (5 − 1.50) × 70 = <b>$122.50</b><br>
+        Total surplus = <b>$367.50</b>
+      </div>
+      <p class="note">$12 = the most any buyer is willing to pay (Qd = 0). $1.50 = the least any seller is willing to accept (Qs = 0).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. CEILING INTERACTIVE -->
+<section class="slide" data-title="Price ceiling">
+  <div class="kicker">Price ceiling = legal MAXIMUM price</div>
+  <h2>Price Ceiling: Move It and Watch the Shortage</h2>
+  <p class="sub">A ceiling only matters (binds) when it is set <b>below</b> equilibrium ($5).</p>
+  <div class="cols">
+    <div class="panel"><svg id="g3" viewBox="0 0 600 470" width="600" height="470"></svg></div>
+    <div>
+      <div class="panel">
+        <div class="ctrl"><label>Price ceiling <span class="val" id="s3v"></span></label><input type="range" id="s3" min="2" max="8" step="0.25" value="4"></div>
+        <div style="margin-bottom:6px" id="t3"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer"><input type="checkbox" id="bm3" style="width:18px;height:18px;accent-color:#7a1fa2"> Show black market (illegal resale up to buyers' value)</label>
+        <table class="nums">
+          <tr><td>Qd at ceiling</td><td class="v" id="n3qd"></td></tr>
+          <tr><td>Qs at ceiling (units actually sold)</td><td class="v" id="n3qs"></td></tr>
+          <tr><td><b>Shortage</b> = Qd − Qs</td><td class="v" id="n3gap"></td></tr>
+          <tr><td><span class="sw" style="background:var(--buyer)"></span>Consumer surplus</td><td class="v" id="n3cs"></td></tr>
+          <tr><td><span class="sw" style="background:var(--seller)"></span>Producer surplus</td><td class="v" id="n3ps"></td></tr>
+          <tr><td><span class="sw" style="background:var(--dwl)"></span>Deadweight loss</td><td class="v" id="n3dwl"></td></tr>
+          <tr id="bmrow3" style="display:none"><td><span class="sw" style="background:#7a1fa2"></span>Black-market gain (illegal)</td><td class="v" id="n3bm"></td></tr>
+        </table>
+      </div>
+      <p class="note">Assumes the scarce units go to the buyers who value them most. Real rationing (lines, luck, black markets) usually makes buyers worse off than shown.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CEILING WORKED + QUIZ -->
+<section class="slide" data-title="Ceiling worked example">
+  <div class="kicker">Worked example · Rent control</div>
+  <h2>Price Ceiling at $4: Step by Step</h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr">
+    <div>
+      <div class="calc">
+        <b>Step 1 · Quantities at $4</b><br>
+        Qd = 120 − 10(4) = 80 &nbsp;&nbsp; Qs = 20(4) − 30 = 50<br>
+        Shortage = 80 − 50 = <b>30 units</b><br><br>
+        <b>Step 2 · Only 50 units trade</b><br>
+        Buyers' value of the 50th unit: P = (120 − 50)/10 = <b>$7</b><br><br>
+        <b>Step 3 · Surplus</b><br>
+        CS = ½ × [(12 − 4) + (7 − 4)] × 50 = <b>$275.00</b><br>
+        PS = ½ × (4 − 1.50) × 50 = <b>$62.50</b><br>
+        DWL = ½ × (7 − 4) × (70 − 50) = <b>$30.00</b><br>
+        Check: 275 + 62.50 + 30 = 367.50 ✓<br><br>
+        <b>Step 4 · If a black market forms</b><br>
+        Illegal resale up to $7: (7 − 4) × 50 = <b>$150</b> moves from buyers to black-market sellers → CS falls to <b>$125</b>
+      </div>
+    </div>
+    <div>
+      <div class="panel big">
+        <h3>What changed vs. equilibrium?</h3>
+        <ul class="tight">
+          <li>Consumers who <b>get</b> an apartment gain (CS $245 → $275).</li>
+          <li>Landlords lose (PS $122.50 → $62.50).</li>
+          <li>$30 of trades that would help both sides <b>never happen</b> = DWL.</li>
+          <li>30 renters want a unit at $4 and cannot find one.</li>
+        </ul>
+      </div>
+      <div class="quiz" data-answer="60" data-fb-right="Right: Qd = 90, Qs = 30, shortage = 60." data-fb-wrong="Compute Qd = 120 − 10(3) and Qs = 20(3) − 30, then subtract.">
+        <div class="q">Check: the ceiling is lowered to $3. What is the shortage?</div>
+        <div class="opts"><button>30</button><button>40</button><button>60</button><button>90</button></div>
+        <div class="fb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. FLOOR INTERACTIVE -->
+<section class="slide" data-title="Price floor">
+  <div class="kicker">Price floor = legal MINIMUM price</div>
+  <h2>Price Floor: Move It and Watch the Surplus</h2>
+  <p class="sub">A floor only binds when it is set <b>above</b> equilibrium ($5).</p>
+  <div class="cols">
+    <div class="panel"><svg id="g5" viewBox="0 0 600 470" width="600" height="470"></svg></div>
+    <div>
+      <div class="panel">
+        <div class="ctrl"><label>Price floor <span class="val" id="s5v"></span></label><input type="range" id="s5" min="2" max="10" step="0.25" value="6"></div>
+        <div style="margin-bottom:6px" id="t5"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin:4px 0 8px;cursor:pointer"><input type="checkbox" id="bm5" style="width:18px;height:18px;accent-color:#7a1fa2"> Show black market (illegal sales below the floor)</label>
+        <table class="nums">
+          <tr><td>Qd at floor (units actually sold)</td><td class="v" id="n5qd"></td></tr>
+          <tr><td>Qs at floor</td><td class="v" id="n5qs"></td></tr>
+          <tr><td><b>Surplus (excess supply)</b> = Qs − Qd</td><td class="v" id="n5gap"></td></tr>
+          <tr><td><span class="sw" style="background:var(--buyer)"></span>Consumer surplus</td><td class="v" id="n5cs"></td></tr>
+          <tr><td><span class="sw" style="background:var(--seller)"></span>Producer surplus</td><td class="v" id="n5ps"></td></tr>
+          <tr><td><span class="sw" style="background:var(--dwl)"></span>Deadweight loss</td><td class="v" id="n5dwl"></td></tr>
+          <tr id="bmrow5" style="display:none"><td><span class="sw" style="background:#7a1fa2"></span>Illegal discounts to buyers</td><td class="v" id="n5bm"></td></tr>
+        </table>
+      </div>
+      <p class="note">Assumes the government does not buy the unsold units, and the lowest-cost sellers make the sales. Black market: sellers with unsold output secretly undercut the floor (e.g., paying workers cash below minimum wage), down to their cost of the last unit sold.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6. FLOOR WORKED + QUIZ -->
+<section class="slide" data-title="Floor worked example">
+  <div class="kicker">Worked example · Minimum wage logic</div>
+  <h2>Price Floor at $6: Step by Step</h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr">
+    <div>
+      <div class="calc">
+        <b>Step 1 · Quantities at $6</b><br>
+        Qd = 120 − 10(6) = 60 &nbsp;&nbsp; Qs = 20(6) − 30 = 90<br>
+        Surplus = 90 − 60 = <b>30 units unsold</b><br><br>
+        <b>Step 2 · Only 60 units trade</b><br>
+        Sellers' cost of the 60th unit: P = (60 + 30)/20 = <b>$4.50</b><br><br>
+        <b>Step 3 · Surplus</b><br>
+        CS = ½ × (12 − 6) × 60 = <b>$180.00</b><br>
+        PS = ½ × [(6 − 1.50) + (6 − 4.50)] × 60 = <b>$180.00</b><br>
+        DWL = ½ × (6 − 4.50) × (70 − 60) = <b>$7.50</b><br>
+        Check: 180 + 180 + 7.50 = 367.50 ✓<br><br>
+        <b>Step 4 · If a black market forms</b><br>
+        Illegal sales down to $4.50: (6 − 4.50) × 60 = <b>$90</b> moves from sellers to buyers → PS falls to <b>$90</b>
+      </div>
+    </div>
+    <div>
+      <div class="panel big">
+        <h3>Apply it: minimum wage</h3>
+        <ul class="tight">
+          <li>The "price" is the wage; sellers are workers, buyers are employers.</li>
+          <li>Workers who keep jobs gain (PS $122.50 → $180).</li>
+          <li>The unsold surplus = people who want work at that wage but are not hired.</li>
+          <li>Size of the effect depends on how far above equilibrium the floor is.</li>
+        </ul>
+      </div>
+      <div class="quiz" data-answer="50" data-fb-right="Right: at $7 buyers take only Qd = 50. Qs = 110, so 60 units go unsold." data-fb-wrong="With a floor, the SHORT side of the market decides how much is sold. Which side is short at $7?">
+        <div class="q">Check: the floor is raised to $7. How many units are actually sold?</div>
+        <div class="opts"><button>50</button><button>60</button><button>70</button><button>110</button></div>
+        <div class="fb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. TAX INTERACTIVE -->
+<section class="slide" data-title="Per-unit tax">
+  <div class="kicker">Per-unit (excise) tax</div>
+  <h2>A Tax Drives a Wedge Between Two Prices</h2>
+  <p class="sub">Buyers pay <b>Pb</b>, sellers keep <b>Ps</b>, and <b>Pb − Ps = tax</b>.</p>
+  <div class="cols">
+    <div class="panel"><svg id="g7" viewBox="0 0 600 470" width="600" height="470"></svg></div>
+    <div>
+      <div class="panel">
+        <div class="seg" id="seg7"><button data-v="sellers" class="on">Tax collected from sellers</button><button data-v="buyers">Tax collected from buyers</button></div>
+        <div class="ctrl"><label>Tax per unit <span class="val" id="s7v"></span></label><input type="range" id="s7" min="0" max="6" step="0.25" value="3"></div>
+        <table class="nums">
+          <tr><td>Price buyers pay (Pb)</td><td class="v" id="n7pb"></td></tr>
+          <tr><td>Price sellers keep (Ps)</td><td class="v" id="n7ps"></td></tr>
+          <tr><td>Quantity sold</td><td class="v" id="n7q"></td></tr>
+          <tr><td><span class="sw" style="background:var(--gov)"></span>Tax revenue = t × Q</td><td class="v" id="n7g"></td></tr>
+          <tr><td><span class="sw" style="background:var(--buyer)"></span>Consumer surplus</td><td class="v" id="n7cs"></td></tr>
+          <tr><td><span class="sw" style="background:var(--seller)"></span>Producer surplus</td><td class="v" id="n7psur"></td></tr>
+          <tr><td><span class="sw" style="background:var(--dwl)"></span>Deadweight loss</td><td class="v" id="n7dwl"></td></tr>
+        </table>
+      </div>
+      <p class="note" id="n7msg"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 8. BURDEN + ELASTICITY -->
+<section class="slide" data-title="Who bears the burden">
+  <div class="kicker">Tax incidence</div>
+  <h2>Who Bears the Burden? Change How Elastic Demand Is</h2>
+  <p class="sub">Tax fixed at <b>$3</b>. Supply stays the same. Rotate demand through the same equilibrium ($5, 70).</p>
+  <div class="cols">
+    <div class="panel"><svg id="g8" viewBox="0 0 600 470" width="600" height="470"></svg></div>
+    <div>
+      <div class="panel">
+        <div class="ctrl"><label><span>Demand: steep (inelastic) ↔ flat (elastic)</span></label><input type="range" id="s8" min="2" max="60" step="1" value="10"></div>
+        <table class="nums">
+          <tr><td>Elasticity of demand |Ed| at equilibrium</td><td class="v" id="n8ed"></td></tr>
+          <tr><td>Elasticity of supply Es at equilibrium</td><td class="v" id="n8es"></td></tr>
+          <tr><td><span class="sw" style="background:var(--buyer)"></span>Buyers' share = Es ÷ (Es + |Ed|)</td><td class="v" id="n8bs"></td></tr>
+          <tr><td><span class="sw" style="background:var(--seller)"></span>Sellers' share = |Ed| ÷ (Es + |Ed|)</td><td class="v" id="n8ss"></td></tr>
+          <tr><td>Buyers pay / sellers keep</td><td class="v" id="n8p"></td></tr>
+        </table>
+      </div>
+      <div class="quiz" data-answer="Falls" data-fb-right="Right: more elastic buyers can walk away, so sellers must absorb more of the tax." data-fb-wrong="Drag demand flatter and watch the blue share of the tax.">
+        <div class="q">Check: demand becomes MORE elastic. The buyers' share of the tax…</div>
+        <div class="opts"><button>Rises</button><button>Falls</button><button>Stays the same</button></div>
+        <div class="fb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. TAX WORKED + QUIZ -->
+<section class="slide" data-title="Tax worked example">
+  <div class="kicker">Worked example · $3 per-unit tax</div>
+  <h2>Tax Incidence: Step by Step</h2>
+  <div class="cols" style="grid-template-columns:1fr 1fr">
+    <div>
+      <div class="calc">
+        <b>Step 1 · New equilibrium (tax on sellers)</b><br>
+        Sellers keep Pb − 3: &nbsp;120 − 10Pb = 20(Pb − 3) − 30<br>
+        180 = 30Pb → <b>Pb = $7</b>, &nbsp;<b>Ps = $4</b>, &nbsp;<b>Q = 50</b><br><br>
+        <b>Step 2 · Split the $3</b><br>
+        Buyers: 7 − 5 = $2 (⅔) &nbsp;·&nbsp; Sellers: 5 − 4 = $1 (⅓)<br>
+        Formula: Es/(Es+|Ed|) = 1.43/(1.43+0.71) = ⅔ ✓<br><br>
+        <b>Step 3 · Areas</b><br>
+        Revenue = 3 × 50 = <b>$150</b> (buyers $100, sellers $50)<br>
+        CS = ½ × (12 − 7) × 50 = <b>$125.00</b><br>
+        PS = ½ × (4 − 1.50) × 50 = <b>$62.50</b><br>
+        DWL = ½ × 3 × (70 − 50) = <b>$30.00</b><br>
+        Check: 125 + 62.50 + 150 + 30 = 367.50 ✓
+      </div>
+    </div>
+    <div>
+      <div class="panel big">
+        <h3>Key idea</h3>
+        <ul class="tight">
+          <li>Who <b>writes the check</b> to the government does not decide who pays.</li>
+          <li>Here supply is more elastic (1.43 vs 0.71), so buyers carry ⅔.</li>
+          <li>DWL: 20 trades worth more than their cost are lost.</li>
+        </ul>
+      </div>
+      <div class="quiz" data-answer="$6.00" data-fb-right="Right: Pb = 5 + ⅔ × 1.50 = $6.00; sellers keep $4.50; Q = 60." data-fb-wrong="Buyers pay ⅔ of the tax in this market. Add ⅔ × $1.50 to $5.">
+        <div class="q">Check: the tax is cut to $1.50. What price do buyers pay?</div>
+        <div class="opts"><button>$5.50</button><button>$5.75</button><button>$6.00</button><button>$6.50</button></div>
+        <div class="fb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. SUMMARY -->
+<section class="slide" data-title="Summary">
+  <div class="kicker">Putting it together</div>
+  <h2>Same Market, Three Policies</h2>
+  <table class="sum">
+    <thead><tr><th>Policy</th><th>Quantity sold</th><th>Consumer surplus</th><th>Producer surplus</th><th>Government revenue</th><th>Deadweight loss</th></tr></thead>
+    <tbody>
+      <tr><td><b>No policy</b> (P = $5)</td><td>70</td><td>$245.00</td><td>$122.50</td><td>$0</td><td>$0</td></tr>
+      <tr><td><b>Ceiling</b> at $4</td><td>50 (shortage 30)</td><td>$275.00</td><td>$62.50</td><td>$0</td><td>$30.00</td></tr>
+      <tr><td><b>Floor</b> at $6</td><td>60 (surplus 30)</td><td>$180.00</td><td>$180.00</td><td>$0</td><td>$7.50</td></tr>
+      <tr><td><b>Tax</b> of $3</td><td>50</td><td>$125.00</td><td>$62.50</td><td>$150.00</td><td>$30.00</td></tr>
+    </tbody>
+  </table>
+  <div class="cols" style="grid-template-columns:1fr 1fr;margin-top:18px">
+    <div class="panel big">
+      <h3>Three rules to remember</h3>
+      <ul class="tight">
+        <li>Binding ceiling (below P*) → <b>shortage</b>; binding floor (above P*) → <b>surplus</b>.</li>
+        <li>Every binding control or tax <b>reduces quantity</b> and creates <b>DWL</b>.</li>
+        <li>The <b>less elastic</b> side bears <b>more</b> of a tax.</li>
+      </ul>
+    </div>
+    <div class="panel big">
+      <h3>Exit ticket</h3>
+      <p style="margin:6px 0 0">A $2 tax is placed on this market. Find Pb, Ps, Q, tax revenue and DWL. Then say which side bears more of the tax and why.</p>
+      <p class="note" style="margin-top:10px">Next: play <b>Tax Dodge</b> at tax-dodge.onrender.com</p>
+    </div>
+  </div>
+</section>
+
+</div></div>
+
+<div class="nav"><button id="prev">← Prev</button><span id="count"></span><button id="next">Next →</button><button id="fs">Full screen</button></div>
+
+<script>
+// ---------- Economics (verified model) ----------
+const E = {
+  Qd: P => 120 - 10*P, Qs: P => 20*P - 30,
+  Pd: Q => (120 - Q)/10, Ps: Q => (Q + 30)/20,
+  base(){ return {CS:245, PS:122.5, DWL:0, G:0}; },
+  ceiling(pc){
+    const qd=this.Qd(pc), qs=Math.max(0,this.Qs(pc));
+    if(pc>=5){ return {...this.base(), binding:false, qd, qs, q:70, gap:0, pc}; }
+    const q=qs, pdq=this.Pd(q);
+    return {binding:true, pc, qd, qs, q, gap:qd-qs, pdq, CS:q*(12-pc)-q*q/20, PS:0.5*(pc-1.5)*q, DWL:0.5*(pdq-pc)*(70-q), G:0};
+  },
+  floor(pf){
+    const qd=Math.max(0,this.Qd(pf)), qs=this.Qs(pf);
+    if(pf<=5){ return {...this.base(), binding:false, qd, qs, q:70, gap:0, pf}; }
+    const q=qd, psq=this.Ps(q);
+    return {binding:true, pf, qd, qs, q, gap:qs-qd, psq, CS:0.5*(12-pf)*q, PS:q*(pf-1.5)-q*q/40, DWL:0.5*(pf-psq)*(70-q), G:0};
+  },
+  tax(t, bd=10){
+    const s=20, Pb=5+t*s/(s+bd), Ps=Pb-t, Q=70-bd*(Pb-5), choke=5+70/bd;
+    return {t, bd, Pb, Ps, Q, choke, buyerShare:s/(s+bd), sellerShare:bd/(s+bd), Ed:bd*5/70, Es:s*5/70,
+      CS:0.5*(choke-Pb)*Q, PS:0.5*(Ps-1.5)*Q, G:t*Q, DWL:0.5*t*(70-Q), buyerTax:(Pb-5)*Q, sellerTax:(5-Ps)*Q};
+  }
+};
+const $=id=>document.getElementById(id);
+const m=x=>'$'+x.toFixed(2);
+const n=x=>(Math.abs(x-Math.round(x))<1e-9?Math.round(x).toString():x.toFixed(1));
+
+// ---------- Graph helper ----------
+const G={W:600,H:470,l:56,r:20,t:18,b:48,QM:130,PM:13};
+const X=q=>G.l+q/G.QM*(G.W-G.l-G.r), Y=p=>G.H-G.b-p/G.PM*(G.H-G.t-G.b);
+const pts=a=>a.map(([q,p])=>X(q).toFixed(1)+','+Y(p).toFixed(1)).join(' ');
+function lineP(f){ // P as function of Q, clipped to box
+  const out=[]; for(let i=0;i<=260;i++){ const q=i*G.QM/260, p=f(q); if(p>=0&&p<=G.PM) out.push([q,p]); }
+  return out.length>1?`M${X(out[0][0])},${Y(out[0][1])} L${X(out[out.length-1][0])},${Y(out[out.length-1][1])}`:'';
+}
+function frame(){
+  let s=`<defs><clipPath id="clip"><rect x="${G.l}" y="${G.t}" width="${G.W-G.l-G.r}" height="${G.H-G.t-G.b}"/></clipPath></defs>`;
+  for(let p=0;p<=12;p+=2) s+=`<line x1="${G.l}" x2="${G.W-G.r}" y1="${Y(p)}" y2="${Y(p)}" stroke="#eee"/><text x="${G.l-8}" y="${Y(p)+4}" font-size="12" text-anchor="end" fill="#5b6470">$${p}</text>`;
+  for(let q=0;q<=120;q+=20) s+=`<text x="${X(q)}" y="${G.H-G.b+17}" font-size="12" text-anchor="middle" fill="#5b6470">${q}</text>`;
+  s+=`<line x1="${G.l}" y1="${Y(0)}" x2="${G.W-G.r}" y2="${Y(0)}" stroke="#333"/><line x1="${G.l}" y1="${Y(0)}" x2="${G.l}" y2="${G.t}" stroke="#333"/>`;
+  s+=`<text x="${G.W-G.r}" y="${G.H-8}" font-size="13" text-anchor="end" fill="#333">Quantity</text><text transform="translate(15,${(G.t+G.H-G.b)/2}) rotate(-90)" font-size="13" text-anchor="middle" fill="#333">Price ($)</text>`;
+  return s;
+}
+const poly=(a,c,o)=>`<polygon points="${pts(a)}" fill="${c}" fill-opacity="${o}"/>`;
+const hl=(p,q1,q2,c,dash)=>`<line x1="${X(q1)}" x2="${X(q2)}" y1="${Y(p)}" y2="${Y(p)}" stroke="${c}" stroke-width="2" ${dash?'stroke-dasharray="5 4"':''}/>`;
+const vl=(q,p1,p2,c,dash)=>`<line x1="${X(q)}" x2="${X(q)}" y1="${Y(p1)}" y2="${Y(p2)}" stroke="${c}" stroke-width="1.5" ${dash?'stroke-dasharray="5 4"':''}/>`;
+const txt=(q,p,s,c,anchor,size,bold)=>`<text x="${X(q)}" y="${Y(p)}" font-size="${size||13}" fill="${c||'#333'}" text-anchor="${anchor||'start'}" ${bold?'font-weight="700"':''} stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${s}</text>`;
+const dot=(q,p,c)=>`<circle cx="${X(q)}" cy="${Y(p)}" r="4.5" fill="${c}"/>`;
+const curves=(dF,sF)=>`<path d="${lineP(dF)}" stroke="#1d5fbf" stroke-width="3" fill="none"/><path d="${lineP(sF)}" stroke="#c2610c" stroke-width="3" fill="none"/>`;
+const BL='#1d5fbf', OR='#c2610c', GR='#8a8f98', GN='#1f7a4d';
+
+// ---------- Slide 2 ----------
+function r2(){
+  const p=+$('s2').value, qd=E.Qd(p), qs=E.Qs(p);
+  $('s2v').textContent=m(p); $('n2qd').textContent=n(qd); $('n2qs').textContent=n(qs);
+  let gap=qd-qs; $('n2gl').textContent= gap>0?'Shortage (Qd − Qs)':gap<0?'Surplus (Qs − Qd)':'Gap';
+  $('n2gap').textContent=n(Math.abs(gap));
+  $('n2msg').textContent= gap>0?'Below $5 buyers want more than sellers offer → price is pushed UP.':gap<0?'Above $5 sellers offer more than buyers want → price is pushed DOWN.':'At $5 the market clears: Qd = Qs = 70.';
+  let s=frame()+'<g clip-path="url(#clip)">';
+  s+=poly([[0,12],[0,5],[70,5]],BL,.22)+poly([[0,5],[0,1.5],[70,5]],OR,.22);
+  s+=curves(E.Pd,E.Ps)+'</g>';
+  s+=hl(5,0,70,'#333',true)+vl(70,5,0,'#333',true)+dot(70,5,'#333')+txt(72,5.35,'E ($5, 70)','#333','start',13,true);
+  s+=hl(p,0,120,'#2b2d42')+dot(Math.max(0,qd),p,BL)+dot(Math.max(0,qs),p,OR);
+  s+=txt(22,8.2,'CS',BL,'middle',15,true)+txt(18,3.9,'PS',OR,'middle',15,true);
+  s+=txt(Math.min(118,E.Qd(0.6)),0.6,'D',BL,'start',15,true)+txt(122,E.Ps(122)-0.2,'S',OR,'start',15,true);
+  $('g2').innerHTML=s;
+}
+// ---------- Slide 3 ----------
+function r3(){
+  const pc=+$('s3').value, R=E.ceiling(pc);
+  $('s3v').textContent=m(pc);
+  $('t3').innerHTML=R.binding?'<span class="tag on">BINDING: set below $5</span>':'<span class="tag off">NOT BINDING: at or above $5, market stays at $5 and 70</span>';
+  $('n3qd').textContent=n(R.qd); $('n3qs').textContent=n(R.qs); $('n3gap').textContent=R.binding?n(R.gap):'0 (no shortage)';
+  const bm=$('bm3').checked && R.binding, bmVal=R.binding?(R.pdq-pc)*R.q:0;
+  $('n3cs').textContent=m(bm?R.CS-bmVal:R.CS); $('n3ps').textContent=m(R.PS); $('n3dwl').textContent=m(R.DWL);
+  $('bmrow3').style.display=bm?'':'none'; $('n3bm').textContent=m(bmVal);
+  let s=frame()+'<g clip-path="url(#clip)">';
+  if(R.binding){
+    const q=R.q;
+    if(bm) s+=poly([[0,12],[0,R.pdq],[q,R.pdq]],BL,.22)+poly([[0,R.pdq],[0,pc],[q,pc],[q,R.pdq]],'#7a1fa2',.35);
+    else s+=poly([[0,12],[0,pc],[q,pc],[q,R.pdq]],BL,.22);
+    s+=poly([[0,pc],[0,1.5],[q,pc]],OR,.22)+poly([[q,R.pdq],[q,pc],[70,5]],GR,.5);
+  } else s+=poly([[0,12],[0,5],[70,5]],BL,.22)+poly([[0,5],[0,1.5],[70,5]],OR,.22);
+  s+=curves(E.Pd,E.Ps)+'</g>';
+  s+=hl(pc,0,125,'#b42318')+txt(124,pc+0.25,'Ceiling '+m(pc),'#b42318','end',13,true)+dot(70,5,'#333');
+  if(R.binding){
+    s+=vl(R.q,R.pdq,0,'#333',true)+dot(R.qs,pc,OR)+dot(R.qd,pc,BL)+txt(R.q,-0.9,'Qs='+n(R.qs),OR,'middle',12,true)+txt(R.qd,-0.9,'Qd='+n(R.qd),BL,'middle',12,true);
+    s+=`<line x1="${X(R.qs)}" x2="${X(R.qd)}" y1="${Y(pc)+12}" y2="${Y(pc)+12}" stroke="#b42318" stroke-width="2"/>`;
+    s+=txt((R.qs+R.qd)/2,pc-0.95,'Shortage '+n(R.gap),'#b42318','middle',13,true);
+    if(bm){ s+=hl(R.pdq,0,R.q,'#7a1fa2',true)+txt(1.5,R.pdq+0.3,'Black-market price '+m(R.pdq),'#7a1fa2','start',13,true)+txt(R.q/2,(R.pdq+pc)/2-0.15,'Black market '+m(bmVal),'#7a1fa2','middle',14,true); }
+  }
+  s+=txt(Math.min(118,E.Qd(0.6)),0.6,'D',BL,'start',15,true)+txt(122,E.Ps(122)-0.2,'S',OR,'start',15,true);
+  $('g3').innerHTML=s;
+}
+// ---------- Slide 5 ----------
+function r5(){
+  const pf=+$('s5').value, R=E.floor(pf);
+  $('s5v').textContent=m(pf);
+  $('t5').innerHTML=R.binding?'<span class="tag on">BINDING: set above $5</span>':'<span class="tag off">NOT BINDING: at or below $5, market stays at $5 and 70</span>';
+  $('n5qd').textContent=n(R.qd); $('n5qs').textContent=n(R.qs); $('n5gap').textContent=R.binding?n(R.gap):'0 (no surplus)';
+  const bm=$('bm5').checked && R.binding, bmVal=R.binding?(pf-R.psq)*R.q:0;
+  $('n5cs').textContent=m(R.CS); $('n5ps').textContent=m(bm?R.PS-bmVal:R.PS); $('n5dwl').textContent=m(R.DWL);
+  $('bmrow5').style.display=bm?'':'none'; $('n5bm').textContent=m(bmVal);
+  let s=frame()+'<g clip-path="url(#clip)">';
+  if(R.binding){
+    const q=R.q;
+    s+=poly([[0,12],[0,pf],[q,pf]],BL,.22);
+    if(bm) s+=poly([[0,pf],[0,R.psq],[q,R.psq],[q,pf]],'#7a1fa2',.35)+poly([[0,R.psq],[0,1.5],[q,R.psq]],OR,.22);
+    else s+=poly([[0,pf],[0,1.5],[q,R.psq],[q,pf]],OR,.22);
+    s+=poly([[q,pf],[q,R.psq],[70,5]],GR,.5);
+  } else s+=poly([[0,12],[0,5],[70,5]],BL,.22)+poly([[0,5],[0,1.5],[70,5]],OR,.22);
+  s+=curves(E.Pd,E.Ps)+'</g>';
+  s+=hl(pf,0,125,'#1f7a4d')+txt(124,pf+0.25,'Floor '+m(pf),'#1f7a4d','end',13,true)+dot(70,5,'#333');
+  if(R.binding){
+    s+=vl(R.q,pf,0,'#333',true)+dot(R.qd,pf,BL)+dot(R.qs,pf,OR)+txt(R.qd,-0.9,'Qd='+n(R.qd),BL,'middle',12,true)+txt(Math.min(R.qs,104),-0.9,'Qs='+n(R.qs)+(R.qs>128?' →':''),OR,'middle',12,true);
+    s+=`<line x1="${X(R.qd)}" x2="${X(Math.min(R.qs,128))}" y1="${Y(pf)+14}" y2="${Y(pf)+14}" stroke="#1f7a4d" stroke-width="2"/>`;
+    s+=txt((R.qd+Math.min(R.qs,128))/2,pf-0.8,'Surplus '+n(R.gap),'#1f7a4d','middle',13,true);
+    if(bm){ s+=hl(R.psq,0,R.q,'#7a1fa2',true)+txt(1.5,R.psq-0.6,'Black-market price '+m(R.psq),'#7a1fa2','start',13,true)+txt(R.q/2,(R.psq+pf)/2-0.15,'Black market '+m(bmVal),'#7a1fa2','middle',14,true); }
+  }
+  s+=txt(Math.min(118,E.Qd(0.6)),0.6,'D',BL,'start',15,true)+txt(122,E.Ps(122)-0.2,'S',OR,'start',15,true);
+  $('g5').innerHTML=s;
+}
+// ---------- Slide 7 ----------
+let who7='sellers';
+function taxGraph(R, shifted){
+  const bd=R.bd, dF=q=>5-(q-70)/bd, sF=E.Ps;
+  let s=frame()+'<g clip-path="url(#clip)">';
+  if(R.t>0){
+    s+=poly([[0,R.choke],[0,R.Pb],[R.Q,R.Pb]],BL,.22);
+    s+=poly([[0,R.Pb],[0,5],[R.Q,5],[R.Q,R.Pb]],GN,.35)+poly([[0,5],[0,R.Ps],[R.Q,R.Ps],[R.Q,5]],GN,.2);
+    s+=poly([[0,R.Ps],[0,1.5],[R.Q,R.Ps]],OR,.22)+poly([[R.Q,R.Pb],[R.Q,R.Ps],[70,5]],GR,.5);
+  } else s+=poly([[0,R.choke],[0,5],[70,5]],BL,.22)+poly([[0,5],[0,1.5],[70,5]],OR,.22);
+  s+=curves(dF,sF);
+  if(shifted==='sellers'&&R.t>0) s+=`<path d="${lineP(q=>sF(q)+R.t)}" stroke="#c2610c" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>`;
+  if(shifted==='buyers'&&R.t>0) s+=`<path d="${lineP(q=>dF(q)-R.t)}" stroke="#1d5fbf" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>`;
+  s+='</g>';
+  s+=hl(5,0,70,'#333',true)+dot(70,5,'#333');
+  if(R.t>0){
+    s+=vl(R.Q,R.Pb,0,'#333',true)+dot(R.Q,R.Pb,BL)+dot(R.Q,R.Ps,OR);
+    s+=txt(R.Q-2,R.Pb+0.35,'Pb '+m(R.Pb),BL,'end',13,true)+txt(R.Q-2,R.Ps-0.65,'Ps '+m(R.Ps),OR,'end',13,true)+txt(R.Q,-0.9,'Q='+n(R.Q),'#333','middle',12,true);
+  }
+  const dEndQ=Math.min(122,70+bd*5), dEndP=dF(dEndQ); s+=txt(dEndQ+1,Math.max(0.5,dEndP+0.35),'D',BL,'start',15,true)+txt(122,E.Ps(122)-0.2,'S',OR,'start',15,true);
+  if(shifted==='sellers'&&R.t>0) s+=txt(Math.min(116,20*(12.2-R.t)-30),12.3,'S + tax',OR,'end',13,true);
+  if(shifted==='buyers'&&R.t>0) s+=txt(Math.max(4,70+bd*(5-R.t-0.8)),0.8,'D − tax',BL,'end',13,true);
+  return s;
+}
+function r7(){
+  const t=+$('s7').value, R=E.tax(t,10);
+  $('s7v').textContent=m(t);
+  $('n7pb').textContent=m(R.Pb); $('n7ps').textContent=m(R.Ps); $('n7q').textContent=n(R.Q);
+  $('n7g').textContent=m(R.G); $('n7cs').textContent=m(R.CS); $('n7psur').textContent=m(R.PS); $('n7dwl').textContent=m(R.DWL);
+  $('n7msg').innerHTML= t>0 ? `Buyers pay ${m(R.Pb-5)} more; sellers keep ${m(5-R.Ps)} less. <b>Switch who pays the government: every number stays the same.</b> Dark green = buyers' part of the revenue, light green = sellers' part.` : 'Move the slider to add a tax.';
+  $('g7').innerHTML=taxGraph(R, who7);
+}
+// ---------- Slide 8 ----------
+function r8(){
+  const bd=+$('s8').value, R=E.tax(3,bd);
+  $('n8ed').textContent=R.Ed.toFixed(2)+(R.Ed<1?' (inelastic)':' (elastic)');
+  $('n8es').textContent=R.Es.toFixed(2);
+  $('n8bs').textContent=(R.buyerShare*100).toFixed(1)+'%  ('+m(R.Pb-5)+')';
+  $('n8ss').textContent=(R.sellerShare*100).toFixed(1)+'%  ('+m(5-R.Ps)+')';
+  $('n8p').textContent=m(R.Pb)+' / '+m(R.Ps);
+  $('g8').innerHTML=taxGraph(R,null);
+}
+// ---------- Wiring ----------
+$('bm3').addEventListener('change',r3); $('bm5').addEventListener('change',r5);
+[['s2',r2],['s3',r3],['s5',r5],['s7',r7],['s8',r8]].forEach(([id,f])=>{ $(id).addEventListener('input',f); f(); });
+document.querySelectorAll('#seg7 button').forEach(b=>b.onclick=()=>{ who7=b.dataset.v; document.querySelectorAll('#seg7 button').forEach(x=>x.classList.toggle('on',x===b)); r7(); });
+document.querySelectorAll('.quiz').forEach(qz=>{
+  qz.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const ok=b.textContent.trim()===qz.dataset.answer;
+    qz.querySelectorAll('button').forEach(x=>x.classList.remove('right','wrong'));
+    b.classList.add(ok?'right':'wrong');
+    qz.querySelector('.fb').textContent= ok? qz.dataset.fbRight : 'Not quite. '+qz.dataset.fbWrong;
+  });
+});
+// ---------- Deck navigation ----------
+const slides=[...document.querySelectorAll('.slide')]; let cur=0;
+function show(i){ cur=Math.max(0,Math.min(slides.length-1,i)); slides.forEach((s,k)=>s.classList.toggle('active',k===cur)); $('count').textContent=(cur+1)+' / '+slides.length; try{history.replaceState(null,'','#'+(cur+1));}catch(e){} }
+slides.forEach((s,k)=>{ if(k>0){ const f=document.createElement('div'); f.className='foot'; f.innerHTML='<span>Dr. Sarabjeet Bedi · ECON 2302</span><span>'+(k+1)+' / '+slides.length+'</span>'; s.appendChild(f);} });
+$('prev').onclick=()=>show(cur-1); $('next').onclick=()=>show(cur+1);
+$('fs').onclick=()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
+document.addEventListener('keydown',e=>{
+  if(document.activeElement && document.activeElement.type==='range' && (e.key==='ArrowLeft'||e.key==='ArrowRight')) return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+  else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+  else if(e.key==='Home') show(0); else if(e.key==='End') show(slides.length-1);
+  else if(e.key==='f'||e.key==='F') $('fs').click();
+});
+function fit(){ const s=Math.min(window.innerWidth/1300, (window.innerHeight-10)/740); $('deck').style.transform='scale('+s+')'; }
+window.addEventListener('resize',fit); fit();
+const h=parseInt(location.hash.slice(1)); show(h>0?h-1:0);
+</script>
+</body>
+</html>
